@@ -28,7 +28,7 @@ var StateController = function(streamId) {
                               && i < response.data.length)
                         {
                             var li = $("<li>").html(comment.message);
-                            if(comment.message.contains('sold'))
+                            if(comment.message.includes('sold'))
                             {
                                 li.appendTo($("sold-list"));
                             }
