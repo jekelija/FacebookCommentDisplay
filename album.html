@@ -33,23 +33,29 @@
         <div class="container-fluid">
             <h3>Welcome To The Facebook Album Sale Helper</h3>
             <div class="container-fluid">
-                <div class="fb-login-button" data-max-rows="1" data-size="large" data-show-faces="false" data-auto-logout-link="true" onlogin="loginAlbums()" data-scope="user_photos,user_videos"></div>
+                <div class="fb-login-button" data-max-rows="1" data-size="large" data-show-faces="false" data-auto-logout-link="true" onlogin="loginAlbums()" data-scope="user_photos,user_videos,user_managed_groups"></div>
                 <h4 id="fb-name"></h4>
-                <div class="fb-choose-album">
+                <div class="fb-choose-group">
                     <form class="form-horizontal">
                         <div class="form-group">
-                            <label for="fb-albums" class="col-sm-4 control-label">Select Album</label>
+                            <label for="fb-groups" class="col-sm-4 control-label">Select Group</label>
                             <div class="col-sm-8">
-                                <select class="form-control" id="fb-albums">
+                                <select class="form-control" id="fb-groups">
                                 </select>
                             </div>
-                            <div id="no-albums" class="hidden alert alert-danger">
-                                Could not find any current albums for this user.
-                                Please create an album then re-load page.
+                            <div id="no-groups" class="hidden alert alert-danger">
+                                Could not find any current groups for this user.
+                            </div>
+                            <label for="fb-albums" class="col-sm-4 control-label">Select Albums To Find Comments For</label>
+                            <div id="fb-albums" class="col-sm-8">
+                                
+                            </div>
+                            <div class="col-sm-offset-4">
+                                <button type="button" id="getAlbumBtn">Get Comments!</button>
                             </div>
                         </div>
                     </form>
-                    <div id="sold">
+                    <div id="all">
                     
                     </div>
                 </div>

@@ -1,0 +1,12 @@
+.photo {
+    overflow : auto;
+}
+
+.photo img {
+    float: left;
+}
+
+.album {
+    border-bottom: 2px solid black;
+    margin: 10px;
+}

@@ -1,39 +1,48 @@
-var albumNameToId = {};
+var groupNameToGroup = {};
 
 $(document).ready(function() {
     //add blank option to albums to force change
     var option = $("<option>");
-    option.appendTo($("#fb-albums"));
+    option.appendTo($("#fb-groups"));
 
     
-    $("#fb-albums").change(function(e) {
-        var albumId = albumNameToId[$("#fb-albums").val()];
-        processAlbum('/' + albumId + '/photos');
+    $("#fb-groups").change(function(e) {
+        var group = groupNameToGroup[$("#fb-groups").val()];
+        getAlbums('/' + group.id + '/albums');
     }); 
+    
+    $("#getAlbumBtn").on('click', function(e) {
+        $('.checkbox input:checked').each(function() {
+            processAlbum($(this).next().text(), '/' + $(this).attr('value') + '/photos');
+        });    
+    });
 });
 
-var processPhoto = function(photo, url) {
+var processPhoto = function(albumDiv, photo, url) {
     FB.api(
         url,
         function(response) {
             if (response && !response.error) {
-                var soldDiv = $("#sold");
                 var added = false;
                 
+                var commentsDiv = null;
                 for(var i = 0; i < response.data.length; ++i) {
                     var comment = response.data[i];
                     if(comment.message.toLowerCase().includes('sold')) {
-                        if(!added) {
-                            var newDiv = $("<div>");
+                        if(!commentsDiv) {
+                            var photoDiv = $("<div>").addClass("photo");
                             var addImg = $("<img>")
                             addImg.attr("src", photo.picture);
-                            addImg.appendTo(newDiv);
-                            newDiv.appendTo(soldDiv);
-                            added = true;
+                            addImg.appendTo(photoDiv);
+                            
+                            commentsDiv = $("<div>");
+                            commentsDiv.appendTo(photoDiv);
+                            photoDiv.appendTo(albumDiv);
                         }
-                        else {
-                            //TODO need to add all comments to photo
-                        }
+                        var name = $("<h4>").html(comment.from.name);
+                        name.appendTo(commentsDiv);
+                        var comment = $("<p>").html(comment.message);
+                        comment.appendTo(commentsDiv);
                     }
                 }
                 
@@ -49,21 +58,28 @@ var processPhoto = function(photo, url) {
 }
 
 //process an album and look for sold items
-var processAlbum = function(url) {
+var processAlbum = function(albumName, url) {
     FB.api(
         url,
         {
-            fields : "picture"
+            fields : "picture",
+            limit : 200 /*never have more than 200 pics in an album*/
         },
         function(response) {
             if (response && !response.error) {
+                var albumDiv = $("<div>").addClass("album");
+                var header = $("<h3>").html(albumName);
+                header.appendTo(albumDiv);
+                albumDiv.appendTo($("#all"));
+
                 for(var i = 0; i < response.data.length; ++i) {
-                    processPhoto(response.data[i], '/' + response.data[i].id + '/comments');
+                    processPhoto(albumDiv, response.data[i], '/' + response.data[i].id + '/comments');
                 }
+                
                 
                 if(response.paging && response.paging.next) {
                     //recurse for paging
-                    processAlbum(response.paging.next);
+                    processAlbum(albumName, response.paging.next);
                 }
             }
             else {
@@ -74,7 +90,7 @@ var processAlbum = function(url) {
 }
 
 //get albums function that we use to assist in pagination
-var _getAlbums = function(url, firstRequest) {
+var getAlbums = function(url, firstRequest) {
     FB.api(
         url,
         function (response) {                
@@ -95,13 +111,17 @@ var _getAlbums = function(url, firstRequest) {
 
                 //build a map so when a user chooses a stream, we know the id
                 for(var i = 0; i < response.data.length; ++i) {
-                    albumNameToId[response.data[i].name] = response.data[i].id;
-                    var option = $("<option>").html(response.data[i].name);
-                    option.appendTo(selectObj);
+                    var div = $("<div>").addClass("checkbox");
+                    var input = $("<input>").attr("type", "checkbox").attr("value", response.data[i].id);
+                    input.appendTo(div);
+                    
+                    var label = $("<label>").html(response.data[i].name);
+                    label.appendTo(div);
+                    div.appendTo(selectObj);
                 }
                 
                 if(response.paging && response.paging.next) {
-                    _getAlbums(response.paging.next, false /*not first request*/);
+                    getAlbums(response.paging.next);
                 }
             }
             else {
@@ -112,11 +132,38 @@ var _getAlbums = function(url, firstRequest) {
 }
 
 // get all albums for a given user and populate the dropdown
-var getAlbums = function(userID) {
-    _getAlbums("/" + userID + "/albums", true/*first request*/);
+var getGroups = function(userID) {
+    FB.api(
+        "/" + userID + "/groups",
+        function (response) {                
+            if (response && !response.error) {
+                //only want to deal w/ showing/hiding groups on first page
+                if(response.data.length == 0) {
+                    //show the error about being no albums
+                    $("#no-groups").removeClass("hidden");
+                }
+                else {
+                    //hide the error about being no albums
+                    $("#no-groups").addClass("hidden");
+                }
+                
+                var selectObj = $("#fb-groups");
+
+                //build a map so when a user chooses a stream, we know the id
+                for(var i = 0; i < response.data.length; ++i) {
+                    groupNameToGroup[response.data[i].name] = response.data[i];
+                    var option = $("<option>").html(response.data[i].name);
+                    option.appendTo(selectObj);
+                }
+            }
+            else {
+                ShowError(response.error);
+            }
+        }
+    );
 }
 
-var facebook = new FacebookController(getAlbums); 
+var facebook = new FacebookController(getGroups); 
 function loginAlbums() {
     facebook.checkLoginState();
 }
