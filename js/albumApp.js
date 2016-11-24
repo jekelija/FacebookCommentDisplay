@@ -7,47 +7,112 @@ $(document).ready(function() {
 
     
     $("#fb-groups").change(function(e) {
+        //clear out old albums
+        $("#fb-albums").empty();
+        
         var group = groupNameToGroup[$("#fb-groups").val()];
         getAlbums('/' + group.id + '/albums');
     }); 
     
     $("#getAlbumBtn").on('click', function(e) {
+        $("#all").empty();
+        
         $('.checkbox input:checked').each(function() {
             processAlbum($(this).next().text(), '/' + $(this).attr('value') + '/photos');
         });    
     });
 });
 
-var processPhoto = function(albumDiv, photo, url) {
+var recursiveGetComments = function(attachTo, commentId) {
     FB.api(
-        url,
+        '/' + commentId + '/comments',
         function(response) {
             if (response && !response.error) {
-                var added = false;
-                
-                var commentsDiv = null;
                 for(var i = 0; i < response.data.length; ++i) {
                     var comment = response.data[i];
-                    if(comment.message.toLowerCase().includes('sold')) {
-                        if(!commentsDiv) {
-                            var photoDiv = $("<div>").addClass("photo");
-                            var addImg = $("<img>")
-                            addImg.attr("src", photo.picture);
-                            addImg.appendTo(photoDiv);
-                            
-                            commentsDiv = $("<div>");
-                            commentsDiv.appendTo(photoDiv);
-                            photoDiv.appendTo(albumDiv);
-                        }
-                        var name = $("<h4>").html(comment.from.name);
-                        name.appendTo(commentsDiv);
-                        var comment = $("<p>").html(comment.message);
-                        comment.appendTo(commentsDiv);
-                    }
+                    var commentDiv = addComment(comment);
+                    commentDiv.appendTo(attachTo);
+                    //recursively get replies to this reply and attach internal
+                    //to this comment so that we get the margin stacking effect
+                    recursiveGetComments(commentDiv, comment.id);
                 }
                 
                 if(response.paging && response.paging.next) {
-                    //TODO
+                    _processPhoto(commentsDiv, response.paging.next);
+                }
+            }
+            else {
+                ShowError(response.error);
+            }
+        }
+    );
+}
+
+/**
+ * Creates a jquery div containing the given comment
+ * @param comment Facebook comments object
+ * @return jquery div
+ */
+var addComment = function(comment) {
+    var postDiv = $("<div>").addClass("comment-container");
+    if(comment.message.toLowerCase().includes('sold')) {
+        postDiv.addClass("highlighted");
+    }
+    var nameEl = $("<h4>").html(comment.from.name);
+    nameEl.appendTo(postDiv);
+    var commentEl = $("<p>").html(comment.message);
+    commentEl.appendTo(postDiv);
+    recursiveGetComments(postDiv, comment.id);
+    return postDiv;
+}
+
+//recursive
+var _processPhoto = function(commentsDiv, url) {
+    FB.api(
+        url, 
+        function(response) {
+            if (response && !response.error) {
+                for(var i = 0; i < response.data.length; ++i) {
+                    var comment = response.data[i];
+                    addComment(comment).appendTo(commentsDiv);                    
+                }
+                
+                if(response.paging && response.paging.next) {
+                    _processPhoto(commentsDiv, response.paging.next);
+                }
+            }
+            else {
+                ShowError(response.error);
+            }
+        }
+    );
+}
+    
+var processPhoto = function(albumDiv, photo) {
+    FB.api(
+        '/' + photo.id + '/comments',
+        function(response) {
+            if (response && !response.error) {
+                var commentsDiv = null;
+                for(var i = 0; i < response.data.length; ++i) {
+                    var comment = response.data[i];
+                    if(!commentsDiv) {
+                        var photoDiv = $("<div>").addClass("photo");
+                        var addImg = $("<img>")
+                        addImg.attr("src", photo.picture);
+                        addImg.appendTo(photoDiv);
+
+                        commentsDiv = $("<div>").addClass("album-photo-div");
+                        commentsDiv.appendTo(photoDiv);
+                        photoDiv.appendTo(albumDiv);
+                    }
+                    addComment(comment).appendTo(commentsDiv);
+                }
+                
+                //we know commentsdiv will not be null b/c comments div gets created
+                //if there are any comments... if there are no comments, then there would be no paging
+                if(response.paging && response.paging.next) {
+                    _processPhoto(commentsDiv, response.paging.next);
                 }
             }
             else {
@@ -73,7 +138,7 @@ var processAlbum = function(albumName, url) {
                 albumDiv.appendTo($("#all"));
 
                 for(var i = 0; i < response.data.length; ++i) {
-                    processPhoto(albumDiv, response.data[i], '/' + response.data[i].id + '/comments');
+                    processPhoto(albumDiv, response.data[i]);
                 }
                 
                 

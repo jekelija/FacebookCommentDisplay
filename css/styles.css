@@ -10,3 +10,24 @@
     border-bottom: 2px solid black;
     margin: 10px;
 }
+
+#bootstrap-overrides .checkbox input[type=checkbox], .checkbox-inline input[type=checkbox], .radio input[type=radio], .radio-inline input[type=radio] {
+    margin-left: 0px;
+}
+
+.album-photo-div {
+    padding-left: 20px;
+    display: inline-block;
+}
+
+.album-form-button {
+    margin-top: 100px;
+}
+
+.highlighted {
+    background-color: lightcyan;
+}
+
+.comment-container {
+    margin-left: 20px;
+}

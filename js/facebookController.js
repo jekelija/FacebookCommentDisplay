@@ -1,3 +1,6 @@
+/**
+ * Constructor for facebook controller. Immediately attempts login after async initializing facebook
+ */ 
 var FacebookController = function(loginCallback) {
     this.loginCallback = loginCallback;
     
@@ -43,6 +46,9 @@ FacebookController.prototype.statusChangeCallback = function(response) {
         if(this.loginCallback) {
             this.loginCallback(response.authResponse.userID);
         }
+    }
+    else {
+        $("#fb-name").html("Please log-in to use this app");
     }
 }
 
