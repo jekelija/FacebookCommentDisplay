@@ -8,13 +8,18 @@ $(document).ready(function() {
 
     
     $("#fb-live-streams").change(function(e) {
+        $('#fb-live-streams').attr('disabled', true);
         var streamId = streamToId[$("#fb-live-streams").val()];
         if(CurrentStateController) {
             CurrentStateController.stopPolling();
         }
-        CurrentStateController = new StateController(streamId);
+        CurrentStateController = new StateController(streamId, ShowError, EndCallback);
     }); 
 });
+
+var EndCallback = function() {
+    $('#fb-live-streams').attr('disabled', false);
+}
 
 // get all live streams for a given user and populate the dropdown
 var getLiveStreams = function(userID) {

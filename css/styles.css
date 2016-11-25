@@ -1,3 +1,17 @@
+.sold-box {
+    float: left;
+    width: 50%;
+}
+
+#sold-list li {
+    font-size: larger;
+    font-weight: bold;
+}
+
+.comments-box {
+    float: left;
+}
+
 .photo {
     overflow : auto;
 }
