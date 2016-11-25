@@ -30,11 +30,11 @@ var StateController = function(streamId) {
                             var li = $("<li>").html(comment.message);
                             if(comment.message.includes('sold'))
                             {
-                                li.appendTo($("sold-list"));
+                                li.appendTo($("#sold-list"));
                             }
                             else 
                             {
-                                li.appendTo($("comments-list"));
+                                li.appendTo($("#comments-list"));
                             }
                             
                             //load up the next comment
