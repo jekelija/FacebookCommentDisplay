@@ -36,10 +36,9 @@ var StateController = function(streamId, errorHandler, endCallback) {
                             
                             while(i < response.data.length && comment.id != that.commentIdBreakpoint)
                             {
-                                var li = $("<li>").html(comment.message);
                                 if(comment.message.toLocaleLowerCase().includes('sold'))
                                 {
-                                    li.appendTo($("#sold-list"));
+                                    addComment(comment).prependTo($("#sold-list"));
                                     if(mostRecentSold) {
                                         $("#last-sold").html(comment.message);
                                         mostRecentSold = false;
@@ -47,7 +46,7 @@ var StateController = function(streamId, errorHandler, endCallback) {
                                 }
                                 else 
                                 {
-                                    li.appendTo($("#comments-list"));
+                                    addComment(comment).prependTo($("#comments-list"));
                                 }
                                 //load up the next comment
                                 ++i;

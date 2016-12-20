@@ -12,6 +12,10 @@
     float: left;
 }
 
+.scroll-box {
+    overflow-y: auto;
+}
+
 .photo {
     overflow : auto;
 }

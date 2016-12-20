@@ -43,8 +43,12 @@ var getLiveStreams = function(userID) {
 
                     //build a map so when a user chooses a stream, we know the id
                     for(var i = 0; i < response.data.length; ++i) {
-                        streamToId[response.data[i].description] = response.data[i].id;
-                        var option = $("<option>").html(response.data[i].description);
+                        var desc = response.data[i].description;
+                        if(!desc) {
+                            desc = "Unnamed";
+                        }
+                        streamToId[desc] = response.data[i].id;
+                        var option = $("<option>").html(desc);
                         option.appendTo(selectObj);
                     }
                 }
